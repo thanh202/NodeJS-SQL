@@ -1,31 +1,60 @@
+const db = require("../common/connect");
 const Book = function (book) {
   this.id = book.id;
   this.name = book.name;
+  this.image = book.image;
+  this.author_id = book.author_id;
 };
 Book.get_all = function (result) {
-  var data = [
-    { id: 1, name: "Book name 1" },
-    { id: 1, name: "Book name 1" },
-    { id: 1, name: "Book name 1" },
-    { id: 1, name: "Book name 1" },
-    { id: 1, name: "Book name 1" },
-  ];
-  result(data);
+  db.query("SELECT * FROM book", function (err, book) {
+    if (err) {
+      return null;
+    } else {
+      result(book);
+    }
+  });
 };
 Book.getById = function (id) {
-  var data = { id: id, name: "Book name 1" };
-  return data;
+  db.query("SELECT * FROM book WHERE id = ?", id, function (err, book) {
+    if (err || book.length == 0) {
+      return null;
+    } else {
+      return book[0];
+    }
+  });
 };
 
 Book.create = function (data, result) {
-  result(data);
+  db.query("INSERT INTO book SET ?", data, function (err, book) {
+    if (err) {
+      result(null);
+    } else {
+      result({ id: book.insertId, ...data });
+    }
+  });
 };
 
 Book.remove = function (id, result) {
-  result("id " + id + " delete successfully");
+  db.query("DELETE FROM book WHERE id = ?", id, function (err, book) {
+    if (err) {
+      result(null);
+    } else {
+      result("Xoa du lieu book co id " + id + " thanh cong");
+    }
+  });
 };
 
-Book.update = function (data, result) {
-  result(data);
+Book.update = function (b, result) {
+  db.query(
+    "UPDATE book SET name=?, image=?, author_id=?, WHERE id=?",
+    [b.name, b.image, b.author_id, b.id],
+    function (err, book) {
+      if (err) {
+        result(null);
+      } else {
+        result(b);
+      }
+    }
+  );
 };
 module.exports = Book;
